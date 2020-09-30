@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop";
 $binary = "portainer.exe"
 $project_path = $((Get-Location).Path)
 
-New-Item -Name dist -Path "$project_path" -ItemType Directory | Out-Null
+New-Item -Name dist -Path "$project_path" -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
 Set-Location -Path "$project_path\api\cmd\portainer"
 
 C:\go\bin\go.exe get -t -d -v ./...

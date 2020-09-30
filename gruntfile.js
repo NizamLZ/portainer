@@ -6,8 +6,6 @@ const webpackProdConfig = require('./webpack/webpack.production');
 var arch = os.arch();
 if (arch === 'x64') arch = 'amd64';
 
-var portainer_data = '/tmp/portainer';
-
 module.exports = function (grunt) {
   loadGruntTasks(grunt, {
     pattern: ['grunt-*', 'gruntify-*'],
@@ -35,19 +33,19 @@ module.exports = function (grunt) {
   grunt.registerTask('lint', ['eslint']);
 
   grunt.registerTask('build:server', [
-    'shell:build_binary:linux:' + arch,
-    'shell:download_docker_binary:linux:' + arch,
-    'shell:download_kompose_binary:linux:' + arch,
-    'shell:download_kubectl_binary:linux:' + arch,
+    'shell:build_binary:windows:' + arch,
+    // 'shell:download_docker_binary:windows:' + arch,
+    // 'shell:download_kompose_binary:windows:' + arch,
+    // 'shell:download_kubectl_binary:windows:' + arch,
   ]);
 
   grunt.registerTask('build:client', ['config:dev', 'env:dev', 'webpack:dev']);
 
   grunt.registerTask('build', ['build:server', 'build:client', 'copy:assets']);
 
-  grunt.registerTask('start:server', ['build:server', 'copy:assets', 'shell:run_container']);
+  grunt.registerTask('start:server', ['build:server', 'copy:assets', 'shell:run_localserver']);
 
-  grunt.registerTask('start:localserver', ['shell:build_binary:linux:' + arch, 'shell:run_localserver']);
+  grunt.registerTask('start:localserver', ['shell:build_binary:windows:' + arch, 'shell:run_localserver']);
 
   grunt.registerTask('start:client', ['shell:install_yarndeps', 'config:dev', 'env:dev', 'webpack:devWatch']);
 
@@ -55,7 +53,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('start:toolkit', ['start:localserver', 'start:client']);
 
-  grunt.task.registerTask('release', 'release:<platform>:<arch>', function (p = 'linux', a = arch) {
+  grunt.task.registerTask('release', 'release:<platform>:<arch>', function (p = 'windows', a = arch) {
     grunt.task.run([
       'config:prod',
       'env:prod',
@@ -167,16 +165,15 @@ function shell_build_binary_azuredevops(p, a) {
 }
 
 function shell_run_container() {
-  return [
+  let cmd = [
     'docker rm -f portainer',
-    'docker run -d -p 8000:8000 -p 9000:9000 -v $(pwd)/dist:/app -v ' +
-      portainer_data +
-      ':/data -v /var/run/docker.sock:/var/run/docker.sock:z --name portainer portainer/base /app/portainer',
-  ].join(';');
+    'docker run -d -p 8000:8000 -p 9000:9000 -v ${pwd}/dist:/app -v /tmp/portainer:/data -v /var/run/docker.sock:/var/run/docker.sock:z --name portainer portainer/base /app/portainer.exe',
+  ].join(' ; ');
+  return cmd;
 }
 
 function shell_run_localserver() {
-  return './dist/portainer';
+  return process.cwd() + '/dist/portainer.exe';
 }
 
 function shell_install_yarndeps() {

@@ -4,7 +4,7 @@ param (
 
 $ErrorActionPreference = "Stop";
 
-New-Item -Path "docker-binary" -ItemType Directory | Out-Null
+New-Item -Path "docker-binary" -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
 
 $download_folder = "docker-binary"
 
